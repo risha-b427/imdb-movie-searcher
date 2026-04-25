@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Film Search</title>
+
+<style>
+body{
+font-family:Arial;
+background:#f7f8fa;
+padding:40px;
+color:#13294B;
+}
+
+.card{
+background:white;
+padding:30px;
+max-width:900px;
+margin:auto;
+border-radius:8px;
+box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+
+input{
+width:70%;
+padding:12px;
+font-size:16px;
+}
+
+button{
+padding:12px 18px;
+background:#13294B;
+color:white;
+border:none;
+cursor:pointer;
+}
+
+button:hover{
+background:#FF5F05;
+}
+
+.movie-item{
+border-bottom:1px solid #ddd;
+padding:15px 0;
+cursor:pointer;
+}
+
+.movie-item:hover{
+background:#f0f3f7;
+}
+
+#result{
+margin-top:25px;
+line-height:1.8;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+<h1>Film Search</h1>
+
+<input id="movie" placeholder="Enter movie title">
+<button onclick="searchMovies()">Search</button>
+
+<div id="result"></div>
+</div>
+
+<script>
+const API = "api.php";
+
+async function searchMovies(){
+
+    let title = document.getElementById("movie").value.trim();
+
+    if(title === ""){
+        alert("Enter movie title");
+        return;
+    }
+
+    document.getElementById("result").innerHTML = "Searching...";
+
+    let res = await fetch(API + "?type=search&movie=" + encodeURIComponent(title));
+    let data = await res.json();
+
+    if(data.Response === "False"){
+        document.getElementById("result").innerHTML = data.Error || "No movies found.";
+        return;
+    }
+
+    let html = "<h2>Search Results</h2>";
+
+    data.Search.forEach(movie => {
+        html += `
+            <div class="movie-item" onclick="getMovieDetails('${movie.imdbID}')">
+                <strong>${movie.Title}</strong> (${movie.Year})<br>
+                IMDb ID: ${movie.imdbID}<br>
+                Type: ${movie.Type}
+            </div>
+        `;
+    });
+
+    document.getElementById("result").innerHTML = html;
+}
+
+async function getMovieDetails(imdbID){
+
+    document.getElementById("result").innerHTML = "Loading details...";
+
+    let res = await fetch(API + "?type=details&id=" + encodeURIComponent(imdbID));
+    let data = await res.json();
+
+    if(data.Response === "False"){
+        document.getElementById("result").innerHTML = data.Error || "Could not load movie details.";
+        return;
+    }
+
+    document.getElementById("result").innerHTML = `
+        <h2>${data.Title}</h2>
+
+        <p><b>Year:</b> ${data.Year}</p>
+        <p><b>Director:</b> ${data.Director}</p>
+        <p><b>Actors:</b> ${data.Actors}</p>
+        <p><b>Genre:</b> ${data.Genre}</p>
+        <p><b>Language:</b> ${data.Language}</p>
+        <p><b>Country:</b> ${data.Country}</p>
+        <p><b>Plot:</b> ${data.Plot}</p>
+
+        <button onclick="searchMovies()">Back to results</button>
+    `;
+}
+</script>
+
+</body>
+</html>
