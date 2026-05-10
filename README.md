@@ -148,6 +148,3 @@ The current implementation passes user input through `urlencode()` before append
 
 ---
 
-## License
-
-MIT
